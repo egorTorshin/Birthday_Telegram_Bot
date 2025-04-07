@@ -11,7 +11,6 @@ bot = telebot.TeleBot(TOKEN)
 
 BIRTHDAYS_FILE = "birthdays.json"
 
-# === Сохраняем пользователя с username ===
 def save_user_full(user_id, username, name, birth_date, chat_id):
     try:
         with open(BIRTHDAYS_FILE, "r", encoding="utf-8") as f:
@@ -39,7 +38,6 @@ def save_user_full(user_id, username, name, birth_date, chat_id):
     with open(BIRTHDAYS_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-# === Удаление профиля ===
 def delete_profile(message, lang='ru'):
     user_id = message.from_user.id
     try:
@@ -61,14 +59,12 @@ def delete_profile(message, lang='ru'):
         bot.send_message(message.chat.id,
                          "ℹ️ Профиль не найден." if lang == 'ru' else "ℹ️ Profile not found.")
 
-# === Команда /start ===
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton("🇷🇺 Русский"), types.KeyboardButton("🇬🇧 English"))
     bot.send_message(message.chat.id, "🇷🇺 Выбери язык! / 🇬🇧 Choose the language!", reply_markup=markup)
 
-# === Обработка текста ===
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     if message.text == '🇷🇺 Русский':
@@ -101,7 +97,6 @@ def get_text_messages(message):
     elif message.text == 'Delete profile':
         delete_profile(message, lang='en')
 
-# === Обработка ДР на русском ===
 def process_birthday_input_ru(message):
     pattern = r'^([А-ЯЁа-яёA-Za-z]+ [А-ЯЁа-яёA-Za-z]+)\n(\d{2}\.\d{2}\.\d{4})$'
     match = re.match(pattern, message.text.strip())
@@ -121,7 +116,6 @@ def process_birthday_input_ru(message):
             '❌ Неверный формат!\nПример:\nИван Иванов\n01.01.2000')
         bot.register_next_step_handler(msg, process_birthday_input_ru)
 
-# === Обработка ДР на английском ===
 def process_birthday_input_en(message):
     pattern = r'^([A-Za-z]+ [A-Za-z]+)\n(\d{2}\.\d{2}\.\d{4})$'
     match = re.match(pattern, message.text.strip())
@@ -141,7 +135,6 @@ def process_birthday_input_en(message):
             '❌ Invalid format!\nExample:\nJohn Smith\n01.01.2000')
         bot.register_next_step_handler(msg, process_birthday_input_en)
 
-# === Поздравления по расписанию ===
 def birthday_checker():
     while True:
         now = datetime.datetime.now()
@@ -170,12 +163,10 @@ def birthday_checker():
                         )
                     except Exception as e:
                         print(f"Ошибка отправки в чат {chat_id}: {e}")
-        time.sleep(86400)  # Проверка раз в сутки
+        time.sleep(86400)
 
-# === Запуск проверки в фоне ===
 t = threading.Thread(target=birthday_checker)
 t.daemon = True
 t.start()
 
-# === Старт бота ===
 bot.polling(none_stop=True, interval=0)
